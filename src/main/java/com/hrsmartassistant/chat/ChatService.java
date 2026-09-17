@@ -15,17 +15,13 @@ public class ChatService {
 
     public ChatResponse processQuestion(String question) {
 
-        OllamaRequest request = new OllamaRequest();
-        request.setModel("qwen3:8b");
-        request.setPrompt(question);
-        request.setStream(false);
+        String answer= ollamaService.generate(question);
 
-        var ollamaResponse = ollamaService.generate(request);
-
-        ChatResponse chatResponse = new ChatResponse();
-        chatResponse.setAnswer(ollamaResponse.getResponse());
+        ChatResponse chatResponse= new ChatResponse();
+        chatResponse.setAnswer(answer);
 
         return chatResponse;
+
     }
 }
 /*
