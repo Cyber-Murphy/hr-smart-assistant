@@ -5,6 +5,7 @@ import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.store.embedding.EmbeddingMatch;
 import dev.langchain4j.store.embedding.EmbeddingSearchRequest;
+import dev.langchain4j.store.embedding.chroma.ChromaApiVersion;
 import dev.langchain4j.store.embedding.chroma.ChromaEmbeddingStore;
 import org.springframework.stereotype.Service;
 
@@ -19,9 +20,13 @@ public class ChromaService {
 
         this.embeddingService= embeddingService;
 
-        this.chromaEmbeddingStore=ChromaEmbeddingStore.builder()
-                .baseUrl("http://localhost:8000").collectionName("hr_documents").tenantName("default_tenant")
-                .databaseName("default_database").build();
+        this.chromaEmbeddingStore = ChromaEmbeddingStore.builder()
+                .apiVersion(ChromaApiVersion.V2)
+                .baseUrl("http://localhost:8000")
+                .collectionName("hr_documents")
+                .tenantName("default_tenant")
+                .databaseName("default_database")
+                .build();
     }
 
 

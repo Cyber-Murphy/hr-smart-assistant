@@ -2,10 +2,13 @@ package com.hrsmartassistant.chat;
 
 import com.hrsmartassistant.chat.dto.ChatRequest;
 import com.hrsmartassistant.chat.dto.ChatResponse;
+import com.hrsmartassistant.document.DocumentService;
+import com.hrsmartassistant.document.IngestionService;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.store.embedding.EmbeddingMatch;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.Path;
 import java.util.List;
 
 @RestController
@@ -15,14 +18,21 @@ public class ChatController {
     private final ChatService chatService;
     private final EmbeddingService embeddingService;
     private final ChromaService chromaService;
+    private final DocumentService documentService;
+    private final IngestionService ingestionService;
 
     public ChatController(
             ChatService chatService,
-            EmbeddingService embeddingService, ChromaService chromaService) {
+            EmbeddingService embeddingService,
+            ChromaService chromaService,
+            DocumentService documentService,
+            IngestionService ingestionService) {
 
         this.chatService = chatService;
         this.embeddingService = embeddingService;
         this.chromaService = chromaService;
+        this.documentService = documentService;
+        this.ingestionService=ingestionService;
     }
     @GetMapping("/embedding")
     public float[] testEmbedding() {
@@ -47,13 +57,29 @@ public class ChatController {
         }
 
 
+//    @GetMapping("/search")
+//    //@RequestParam will fetch the value and will put into the String question
+//    public List<EmbeddingMatch<TextSegment>> search(@RequestParam String question ){
+//
+//        return chromaService.search(question);'
+
     @GetMapping("/search")
-    //@RequestParam will fetch the value and will put into the String question
-    public List<EmbeddingMatch<TextSegment>> search(@RequestParam String question ){
+    public String search(@RequestParam String question) {
 
-        return chromaService.search(question);
+        List<EmbeddingMatch<TextSegment>> results =
+                chromaService.search(question);
 
+        return results.get(0).embedded().text();
     }
+
+    @GetMapping("/ingest")
+    public String ingest(){
+        ingestionService.ingest(Path.of("/Users/gauravsingh/Downloads/HR_Policy_Test.pdf"));
+        return "Successfully ingested";
+    }
+
+
+
 
 }
 
