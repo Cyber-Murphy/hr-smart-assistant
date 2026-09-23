@@ -4,6 +4,7 @@ import com.hrsmartassistant.chat.dto.ChatRequest;
 import com.hrsmartassistant.chat.dto.ChatResponse;
 import com.hrsmartassistant.document.DocumentService;
 import com.hrsmartassistant.document.IngestionService;
+import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.store.embedding.EmbeddingMatch;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/chat")
+@CrossOrigin(origins = "http://localhost:4200")
 public class ChatController {
 
     private final ChatService chatService;
@@ -25,14 +27,14 @@ public class ChatController {
             ChatService chatService,
             EmbeddingService embeddingService,
             ChromaService chromaService,
-            DocumentService documentService,
-            IngestionService ingestionService) {
+            DocumentService documentService
+    , IngestionService ingestionService) {
 
         this.chatService = chatService;
         this.embeddingService = embeddingService;
         this.chromaService = chromaService;
         this.documentService = documentService;
-        this.ingestionService=ingestionService;
+        this.ingestionService = ingestionService;
     }
     @GetMapping("/embedding")
     public float[] testEmbedding() {
@@ -49,12 +51,12 @@ public class ChatController {
         return chatService.processQuestion(chatRequest.getQuestion());
     }
 
-    @GetMapping("/store")
-        public String storeChunk(){
-            chromaService.storeChunk("Employees receive 12 days of paternity leave.");
-
-            return "Stored successfully";
-        }
+//    @GetMapping("/store")
+//        public String storeChunk(){
+//            chromaService.storeChunk("Employees receive 12 days of paternity leave.");
+//
+//            return "Stored successfully";
+//        }
 
 
 //    @GetMapping("/search")
@@ -69,16 +71,23 @@ public class ChatController {
         List<EmbeddingMatch<TextSegment>> results =
                 chromaService.search(question);
 
-        return results.get(0).embedded().text();
+        TextSegment segment = results.get(0).embedded();
+
+        return "TEXT:\n" +
+                segment.text() +
+                "\n\nMETADATA:\n" +
+                segment.metadata();
     }
 
+    @GetMapping("/extract")
+    public Document extract(){
+        return documentService.extractText(Path.of("/Users/gauravsingh/Downloads/HR_Policy_Test.pdf"));
+    }
     @GetMapping("/ingest")
     public String ingest(){
         ingestionService.ingest(Path.of("/Users/gauravsingh/Downloads/HR_Policy_Test.pdf"));
         return "Successfully ingested";
     }
-
-
 
 
 }

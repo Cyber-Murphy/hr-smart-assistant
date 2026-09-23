@@ -39,15 +39,15 @@ public class ChromaService {
 //    }
 
     // now we will store vector+original text+ metaData
-    public void storeChunk(String text){
+    public void storeChunk(TextSegment textSegment){
 
-        float[] vector=embeddingService.embed(text);
+        float[] vector=embeddingService.embed(textSegment.text());
 
         Embedding embedding=Embedding.from(vector);
 
-        Metadata metadata=new Metadata();
-        //TextSegment is a LangChain4j object that represents a piece of text that belongs to an embedding.
-        TextSegment textSegment=TextSegment.from(text,metadata);
+//        Metadata metadata=new Metadata();
+//        //TextSegment is a LangChain4j object that represents a piece of text that belongs to an embedding.
+//        TextSegment textSegment=TextSegment.from(text,metadata);
 
         chromaEmbeddingStore.add(embedding,textSegment);
 

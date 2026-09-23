@@ -35,7 +35,7 @@ public class IngestionService {
 
             TextSegment textSegment=chunks.get(i);
 
-            chromaService.storeChunk(textSegment.text());
+            chromaService.storeChunk(textSegment);
         }
 
         // now store those embedding to chroma db

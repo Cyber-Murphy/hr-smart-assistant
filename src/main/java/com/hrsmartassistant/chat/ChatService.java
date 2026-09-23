@@ -2,11 +2,13 @@ package com.hrsmartassistant.chat;
 
 import com.hrsmartassistant.chat.dto.ChatResponse;
 import com.hrsmartassistant.chat.dto.OllamaRequest;
+import com.hrsmartassistant.chat.dto.Source;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.ollama.OllamaChatModel;
 import dev.langchain4j.store.embedding.EmbeddingMatch;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,8 +36,23 @@ public class ChatService {
 //    }
 
     public ChatResponse processQuestion(String question){
-        //1st take the context;
-        String context=CreateContext(question);
+//        //1st take the context;
+//        String context=CreateContext(question);
+
+        List<EmbeddingMatch<TextSegment>> results =
+                chromaService.search(question);
+
+        String context = createContext(results);
+
+        // here we will add the file and page to each answer (its source )
+        List<Source> sources = new ArrayList<>();
+        for(int i=0;i<results.size();i++){
+            Source source=new Source();
+            source.setFile(results.get(i).embedded().metadata().getString("file"));
+            source.setPage(results.get(i).embedded().metadata().getInteger("page"));
+            sources.add(source);
+
+        }
         // create prompt
         String prompt = """
             You are an HR assistant.
@@ -54,20 +71,31 @@ public class ChatService {
         String answer= ollamaService.generate(prompt);
         ChatResponse chatResponse=new ChatResponse();
         chatResponse.setAnswer(answer);
+        chatResponse.setSources(sources);
         return chatResponse;
 
     }
 
-    public String CreateContext(String text){
-        // we will take the
-        List<EmbeddingMatch<TextSegment>> textMatches= chromaService.search(text);
+    // This is 1st changes now we are changing it
+//    public String CreateContext(String text){
+//        // we will take the
+//        List<EmbeddingMatch<TextSegment>> textMatches= chromaService.search(text);
+//
+//        // now will do stream.map.collect
+//        return textMatches.stream()
+//                .map(match -> match.embedded().text())
+//                .collect(Collectors.joining("\n\n"));
+//
+//    }
+    public String createContext(
+            List<EmbeddingMatch<TextSegment>> textMatches) {
 
-        // now will do stream.map.collect
         return textMatches.stream()
                 .map(match -> match.embedded().text())
                 .collect(Collectors.joining("\n\n"));
-
     }
+
+
 }
 /*
 * OllamaService → injected using constructor DI.
